@@ -1,8 +1,9 @@
 #! /usr/bin/python3
+import sys
 import socket
 import traceback
 import threading
-import reqhndl_module
+import requesthndl_module
 
 # Global constants
 MAX_RECV_SIZE = 4096
@@ -11,28 +12,11 @@ BACKLOG = 5
 # Server socket initialization
 server_socket = None
 
-# (2) functions here
-
-# (1) functions here
-def request_handling(c, a):
-    pass
-
-def create_new_handler(c, a):
-    handler = threading.Thread(name=f"{a[0]} Handler", target=request_handling, args=(c, a))
+def create_new_handler(c, a, req):
+    handler = threading.Thread(name=f"{a[0]} Handler", target=handle_http_request, args=(c, req))
     handler.setDaemon = True
     handler.start()
     return handler
-
-def log(message, iserror=False):
-    now = datetime.datetime.now().strftime("[%d-%m-%Y %H:%M:%S]")
-    
-    color = "green"
-    if (iserror):
-        color = "red"
-
-    buffer = f"{colored(now, color)} {message}"
-    # Print log to stdout and stderr
-    print(buffer)
 
 def main():
     if (len(sys.argv) <= 1):
@@ -50,7 +34,8 @@ def main():
         c, a = server_socket.accept(BACKLOG)
         if (c):
             log(f"Accepted connection from {a}")
-            create_new_handler(c, a)
+            req = recvall(c)
+            create_new_handler(c, a, req)
         
 if __name__ == "__main__":
     try:
@@ -65,4 +50,4 @@ if __name__ == "__main__":
             server_socket.close()
         log("Force stopping any running threads.")
         sys.exit()
-        
+    
