@@ -8,7 +8,7 @@ from requesthndl_module import *
 # Global constants
 MAX_RECV_SIZE = 4096
 PORT = 8888
-BACKLOG = 1
+BACKLOG = 10
 
 # Server socket initialization
 server_socket = None
@@ -22,6 +22,7 @@ def main():
     server_socket.listen(BACKLOG)
 
     while True:
+        log(f"Waiting for new connection.")
         client_socket, client_addr = server_socket.accept()
         log(f"{client_addr} Accepted connection.")
 
