@@ -5,7 +5,18 @@ from logging_module import *
 BUFF_SIZE = 1024
 
 def parse_header(request_content: bytes) -> dict:
-    pass
+    str_request = request_content.decode("utf8")
+    lst_request = str_request.split('\r\n')
+    pos1 = lst_request[0].find('/')
+    pos2 = lst_request[0].find('html')
+    str_url = lst_request[0][pos1:pos2+4]
+    dict_headers = {"URL":str_url}
+    splitedlist = [i.split(':') for i in lst_request]
+    i = 1
+    while i < len(splitedlist)-1:
+        dict_headers.update({splitedlist[i][0]: splitedlist[i][1]})
+        i = i + 1
+    return dict_headers
 
 def is_blocked(url: str) -> bool:
     pass
