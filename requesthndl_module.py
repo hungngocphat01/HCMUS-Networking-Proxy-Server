@@ -10,8 +10,8 @@ def parse_header(request_content: bytes) -> dict:
 
     # Get url of the request
     pos1 = lst_request[0].find('/')
-    pos2 = lst_request[0].find('html')
-    str_url = lst_request[0][pos1:pos2+4]
+    pos2 = lst_request[0].find('HTTP')
+    str_url = lst_request[0][pos1:pos2-1]
     dict_headers = {"URL":str_url}
 
     # Get host information
