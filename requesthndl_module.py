@@ -45,4 +45,20 @@ def recvall(s: socket.socket):
     pass
 
 def handle_http_request(c: socket.socket, a: tuple):
-    pass
+
+    # Receive data from client
+    request_content = recvall(c)
+    
+    # parse request header
+    request_headers = parse_header(request_content)
+    dict_hostPort = get_target_info(request_headers)
+    
+    # Get host and port of the destination server
+    host = dict_hostPort["hostname"]
+    port = dict_hostPort["port"]
+
+    # Send request data of client to destination server
+    a.sendall(bytes(request_content,"utf8"))
+    # Forward server's reply to client
+
+    # Close connection
