@@ -7,12 +7,24 @@ BUFF_SIZE = 1024
 def parse_header(request_content: bytes) -> dict:
     str_request = request_content.decode("utf8")
     lst_request = str_request.split('\r\n')
+
+    # Get url of the request
     pos1 = lst_request[0].find('/')
     pos2 = lst_request[0].find('html')
     str_url = lst_request[0][pos1:pos2+4]
+
+    # Get host information
+    lst_host = lst_request[1].split(':')
+    # If host contains port number
+    if len(lst_host) == 3:
+        dict_headers.update({lst_host[0]:lst_host[1]+':'+lst_host[2]})
+    else:
+        dict_headers.update({lst_host[0]:lst_host[1]})
+
+    # Add other values to dict
     dict_headers = {"URL":str_url}
     splitedlist = [i.split(':') for i in lst_request]
-    i = 1
+    i = 2
     while i < len(splitedlist)-1:
         dict_headers.update({splitedlist[i][0]: splitedlist[i][1]})
         i = i + 1
