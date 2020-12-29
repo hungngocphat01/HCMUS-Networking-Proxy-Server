@@ -12,6 +12,7 @@ def parse_header(request_content: bytes) -> dict:
     pos1 = lst_request[0].find('/')
     pos2 = lst_request[0].find('html')
     str_url = lst_request[0][pos1:pos2+4]
+    dict_headers = {"URL":str_url}
 
     # Get host information
     lst_host = lst_request[1].split(':')
@@ -22,7 +23,6 @@ def parse_header(request_content: bytes) -> dict:
         dict_headers.update({lst_host[0]:lst_host[1]})
 
     # Add other values to dict
-    dict_headers = {"URL":str_url}
     splitedlist = [i.split(':') for i in lst_request]
     i = 2
     while i < len(splitedlist)-1:
