@@ -5,9 +5,9 @@ from logging_module import *
 BUFF_SIZE = 1024
 
 def parse_header(request_content: bytes) -> dict:
-    
+
     headers = request_content[0:request_content.find(b"\r\n\r\n")]
-    str_request = request_content.decode("utf8")
+    str_request = headers.decode("utf8")
     lst_request = str_request.split('\r\n')
 
     # Get url of the request
@@ -63,12 +63,33 @@ def handle_http_request(c: socket.socket, a: tuple):
     request_headers = parse_header(request_content)
     dict_hostPort = get_target_info(request_headers)
     
+
+    # Check method whether it is POST or GET
+    method = request_headers["Method"]
+    if(method != "GET" and method != "POST"):
+        c.close()
+        return
+
+    # Check if the url is blocked or not
+    isBlocked = is_blocked(request_headers["URL"])
+    if isBlocked:
+        send_403_forbidden(c)
+        return
     # Get host and port of the destination server
     host = dict_hostPort["hostname"]
     port = dict_hostPort["port"]
 
     # Send request data of client to destination server
-    a.sendall(bytes(request_content,"utf8"))
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.connect((host, port))
+    server_socket.sendall(bytes(request_content,"utf8"))
     # Forward server's reply to client
-
+    reply = server_socket.recv(BUFFER_SIZE)
+    while len(reply):
+        c.send(reply)
+        reply = server_socket.recv(BUFFER_SIZE)
+        c.send("\r\n\r\n")
     # Close connection
+    server_socket.close()
+    c.close()
+    return
