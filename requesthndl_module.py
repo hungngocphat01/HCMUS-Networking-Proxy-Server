@@ -87,8 +87,8 @@ def handle_http_request(c: socket.socket, a: tuple):
     reply = server_socket.recv(BUFFER_SIZE)
     while len(reply):
         c.send(reply)
-        reply = server_socket.recv(BUFFER_SIZE)
-        c.send("\r\n\r\n")
+        reply = server_socket.recv(BUFFER_SIZE)    
+    c.send("\r\n\r\n")
     # Close connection
     server_socket.close()
     c.close()
