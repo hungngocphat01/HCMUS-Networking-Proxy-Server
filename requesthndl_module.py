@@ -5,6 +5,8 @@ from logging_module import *
 BUFF_SIZE = 1024
 
 def parse_header(request_content: bytes) -> dict:
+    
+    headers = request_content[0:request_content.find(b"\r\n\r\n")]
     str_request = request_content.decode("utf8")
     lst_request = str_request.split('\r\n')
 
@@ -21,6 +23,14 @@ def parse_header(request_content: bytes) -> dict:
         dict_headers.update({lst_host[0]:lst_host[1]+':'+lst_host[2]})
     else:
         dict_headers.update({lst_host[0]:lst_host[1]})
+
+    # Get method information
+    if any("GET" in s for s in lst_request):
+        method = "GET"
+    elif any("POST" in s for s in lst_request):
+        method = "POST"
+    else method = "UNK"
+    dict_headers.update({"Method":method})
 
     # Add other values to dict
     splitedlist = [i.split(':') for i in lst_request]
