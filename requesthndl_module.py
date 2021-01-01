@@ -7,22 +7,14 @@ BUFFER_SIZE = 1024
 def parse_header(request_content: bytes) -> dict:
 
     headers = request_content[0:request_content.find(b"\r\n\r\n")]
-<<<<<<< HEAD
-    str_request = headers.decode("utf8")
-=======
     str_request = headers.decode("utf-8")
->>>>>>> refs/remotes/origin/main
     lst_request = str_request.split('\r\n')
 
     # Get url of the request
     pos1 = lst_request[0].find('/')
     pos2 = lst_request[0].find('HTTP')
     str_url = lst_request[0][pos1:pos2-1]
-<<<<<<< HEAD
-    dict_headers = {"URL":str_url}
-=======
     dict_headers = {"URI":str_url}
->>>>>>> refs/remotes/origin/main
 
     # Get host information
     lst_host = lst_request[1].split(':')
@@ -37,14 +29,9 @@ def parse_header(request_content: bytes) -> dict:
         method = "GET"
     elif any("POST" in s for s in lst_request):
         method = "POST"
-<<<<<<< HEAD
-    else method = "UNK"
-    dict_headers.update({"Method":method})
-=======
     else:
         method = "UNK"
     dict_headers.update({"Method": method})
->>>>>>> refs/remotes/origin/main
 
     # Add other values to dict
     splitedlist = [i.split(':') for i in lst_request]
@@ -70,24 +57,14 @@ def recvall(s: socket.socket):
 
 
 def handle_http_request(c: socket.socket, a: tuple):
-<<<<<<< HEAD
-
-    # Receive data from client
-    request_content = recvall(c)
-=======
     # Receive data from client
     request_content = recvall(c)
     log(f"{a} Request retrieved.")
->>>>>>> refs/remotes/origin/main
     
     # parse request header
     request_headers = parse_header(request_content)
     dict_hostPort = get_target_info(request_headers)
     
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/origin/main
     # Check method whether it is POST or GET
     method = request_headers["Method"]
     if(method != "GET" and method != "POST"):
@@ -95,37 +72,17 @@ def handle_http_request(c: socket.socket, a: tuple):
         return
 
     # Check if the url is blocked or not
-<<<<<<< HEAD
-    isBlocked = is_blocked(request_headers["URL"])
-=======
     isBlocked = is_blocked(request_headers["URI"])
->>>>>>> refs/remotes/origin/main
     if isBlocked:
         send_403_forbidden(c)
         return
     # Get host and port of the destination server
-<<<<<<< HEAD
-    host = dict_hostPort["hostname"]
-=======
     host = dict_hostPort["host"].strip()
->>>>>>> refs/remotes/origin/main
     port = dict_hostPort["port"]
 
     # Send request data of client to destination server
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.connect((host, port))
-<<<<<<< HEAD
-    server_socket.sendall(bytes(request_content,"utf8"))
-    # Forward server's reply to client
-    reply = server_socket.recv(BUFFER_SIZE)
-    while len(reply):
-        c.send(reply)
-        reply = server_socket.recv(BUFFER_SIZE)    
-    c.send("\r\n\r\n")
-    # Close connection
-    server_socket.close()
-    c.close()
-=======
     server_socket.sendall(request_content)
     # Forward server's reply to client
 
@@ -149,5 +106,4 @@ def handle_http_request(c: socket.socket, a: tuple):
     c.close()
 
     log(f"{a} Connection closed.")
->>>>>>> refs/remotes/origin/main
     return
