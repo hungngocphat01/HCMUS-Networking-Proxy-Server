@@ -51,7 +51,10 @@ def get_target_info(header: dict) -> dict:
 
 
 def send_403_forbidden(client_socket: socket.socket):
-    pass
+    client_socket.send(b'HTTP/1.1 403 Forbidden\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n'
+                        b'<h1>Error 403: Forbidden</h1>\r\n<p>The requested websit violates our administrative policies.</p>'
+                        b'</body>\r\n</html>\r\n')
+    client_socket.close()
 
 def recvall(s: socket.socket):
     pass
