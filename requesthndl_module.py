@@ -1,7 +1,7 @@
 from os import replace
 import socket
 from logging_module import *
-import threading
+import traceback
 
 BUFFER_SIZE = 1024
 
@@ -42,6 +42,12 @@ def parse_header(request_content: bytes) -> dict:
         i = i + 1
     return dict_headers
 
+def send_403_forbidden(client_socket: socket.socket):
+    client_socket.send(b'HTTP/1.1 403 Forbidden\r\nContent-Length: 160\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n\
+<h1>Error 403: Forbidden</h1>\r\n<p>The requested websit violates our administrative policies.</p>\
+</body>\r\n</html>\r\n')
+    client_socket.close()
+
 def is_blocked(url: str) -> bool:
     pass
     
@@ -49,14 +55,7 @@ def is_blocked(url: str) -> bool:
 def get_target_info(header: dict) -> dict:
     pass
 
-
-def send_403_forbidden(client_socket: socket.socket):
-    client_socket.send(b'HTTP/1.1 403 Forbidden\r\nContent-Length: 160\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n\
-<h1>Error 403: Forbidden</h1>\r\n<p>The requested websit violates our administrative policies.</p>\
-</body>\r\n</html>\r\n')
-    client_socket.close()
-
-def recvall(s: socket.socket):
+def recvall(s: socket.socket) -> bytes:
     pass
 
 
@@ -69,39 +68,39 @@ def handle_http_request(c: socket.socket, a: tuple):
         request_content = recvall(c)
 
         if (len(request_content) == 0):
-            raise Exception
-
-        log(f"{a} Request retrieved.", color="yellow")
+            log(f"{a} Empty request. Ignoring...", color="yellow")
+            raise UserWarning
         
         # parse request header
         request_headers = parse_header(request_content)
         dict_hostPort = get_target_info(request_headers)
+
+        # Log request header
+        req_log(request_headers)
         
         # Check method whether it is POST or GET
         method = request_headers["Method"]
         if(method != "GET" and method != "POST"):
-            log(f"{a} Method unsupported.", color="red")
-            c.close()
-            return
+            log(f"{a} Method unsupported.", color="yellow")
+            raise UserWarning
 
         # Check if the url is blocked or not
         isBlocked = is_blocked(request_headers["URI"])
         if isBlocked:
             send_403_forbidden(c)
-            log(f"{a} Forbidden website: {request_headers['URI']}", color="red")
+            log(f"{a} Forbidden website: {request_headers['URI']}", color="yellow")
             return
+
         # Get host and port of the destination server
         host = dict_hostPort["host"].strip()
         port = dict_hostPort["port"]
         
-        log(f"{a} Destinataion: {host}:{port}", color="green")
-
         # Send request data of client to destination server
         server_socket.connect((host, port))
         server_socket.sendall(request_content)
+        
         # Forward server's reply to client
-
-        log(f"{a} Forwarding: {request_headers['URI']}", color="yellow")
+        log(f"{a} Forwarding: {request_headers['URI']}", color="magenta")
         with server_socket:
             while True:
                 # Transfering 4 KB can't be slower than 1.5s in normal condition
@@ -114,14 +113,16 @@ def handle_http_request(c: socket.socket, a: tuple):
                 if not reply:
                     break
                 c.sendall(reply)
-        log(f"{a} Forwarded: {request_headers['URI']}")
+        log(f"{a} Forwarded: {request_headers['URI']}", color="green")
     
-    except Exception:
+    except UserWarning:
         pass
+    except Exception:
+        log(traceback.format_exc(), color="red")
     finally:
         # Close connection
         server_socket.close()
         c.close()
 
-        log(f"{a} Connection closed.", color="red")
+        log(f"{a} Connection closed.\n", color="yellow")
         return
