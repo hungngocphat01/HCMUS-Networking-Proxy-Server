@@ -49,14 +49,35 @@ def send_403_forbidden(client_socket: socket.socket):
     client_socket.close()
 
 def is_blocked(url: str) -> bool:
-    pass
+    f = open("blacklist.conf", mode='rt')
+    BUA = f.readlines() #blocked_URL_array
+    for i in BUA:
+        if (url in i or i in url):
+            return True
+    return False
     
-
 def get_target_info(header: dict) -> dict:
-    pass
+    if "Host" in header.keys():
+        target = header["Host"]
+    else:
+        target = header["URI"]
+    target = target.split(":")
+    host = target[0]
+    if (len(target) == 1):
+        port = 80
+    else:
+        port = target[1]
+    return {"host": host, "port": port}
 
 def recvall(s: socket.socket) -> bytes:
-    pass
+    buff = b"";
+    while (True):
+        recv_data = s.recv(BUFFER_SIZE)
+        buff += recv_data
+        if ((len(data)) < BUFFER_SIZE):
+            break
+
+    return buff
 
 
 def handle_http_request(c: socket.socket, a: tuple):
