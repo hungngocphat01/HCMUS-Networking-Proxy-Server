@@ -43,14 +43,15 @@ def parse_header(request_content: bytes) -> dict:
     return dict_headers
 
 def send_403_forbidden(client_socket: socket.socket):
-    client_socket.send(b'HTTP/1.1 403 Forbidden\r\nContent-Length: 160\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n\
-<h1>Error 403: Forbidden</h1>\r\n<p>The requested websit violates our administrative policies.</p>\
-</body>\r\n</html>\r\n')
+    client_socket.send(b'HTTP/1.1 403 Forbidden\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n\
+<h1>Error 403: Forbidden</h1>\r\n<p>The requested website violates our administrative policies.</p>\
+</body>\r\n</html>\r\n\r\n')
     client_socket.close()
 
 def is_blocked(url: str) -> bool:
     f = open("blacklist.conf", mode='rt')
     BUA = f.readlines() #blocked_URL_array
+    BUA = [i.strip("\n") for i in BUA]
     for i in BUA:
         if (url in i or i in url):
             return True
@@ -74,7 +75,7 @@ def recvall(s: socket.socket) -> bytes:
     while (True):
         recv_data = s.recv(BUFFER_SIZE)
         buff += recv_data
-        if ((len(data)) < BUFFER_SIZE):
+        if ((len(buff)) < BUFFER_SIZE):
             break
 
     return buff
