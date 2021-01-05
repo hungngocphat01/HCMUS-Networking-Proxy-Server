@@ -11,6 +11,10 @@ BACKLOG = 10
 server_socket = None
 
 def main():
+    log("HTTP Proxy Server")
+    log("Computer Networking Project 01")
+    log("(c) 2020-2021 H.N.Phat, B.N.T.Vy, H.M.Quan.")
+    log("===================================================")
     log(f"Proxy server started at port {PORT}.")
     log("Waiting for new connection.")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
