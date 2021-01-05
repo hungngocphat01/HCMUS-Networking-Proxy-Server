@@ -2,6 +2,7 @@ from os import replace
 import socket
 from logging_module import *
 import traceback
+import base64
 
 BUFFER_SIZE = 1024
 
@@ -43,9 +44,16 @@ def parse_header(request_content: bytes) -> dict:
     return dict_headers
 
 def send_403_forbidden(client_socket: socket.socket):
-    client_socket.send(b'HTTP/1.1 403 Forbidden\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n\
-<h1>Error 403: Forbidden</h1>\r\n<p>The requested website violates our administrative policies.</p>\
-</body>\r\n</html>\r\n\r\n')
+    with open("403forbidden.png", mode="rb") as image_file:
+        img_binary_data = base64.b64encode(image_file.read())
+
+    html = b'HTTP/1.1 403 Forbidden\r\n\r\n<html>\r\n<title>403 Forbidden</title>\r\n<body>\r\n<center>\r\n\
+<h1>Error 403: Forbidden</h1>\r\n<p style="font-size:20px;">The requested website violates our administrative policies.<br>\
+Any outgoing connection has been blocked!</p>\
+<img alt="403forbidden_image" style="max-width:100%; height:auto; width:400px;" src="data:image/png;base64,' + img_binary_data + b'">' + \
+b'</center></body>\r\n</html>\r\n\r\n'
+    
+    client_socket.send(html)
     client_socket.close()
 
 def is_blocked(url: str) -> bool:
